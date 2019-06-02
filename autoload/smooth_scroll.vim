@@ -31,6 +31,7 @@ endif
 
 " The time
 let s:smooth_scroll_time = 0
+let s:smooth_scroll_prev = 0
 let s:smooth_scroll_nline = 80
 let s:smooth_scroll_ntime = 20
 let s:smooth_scroll_direction = 1
@@ -39,7 +40,7 @@ function! s:smooth_scroll_linear(t)
   let nline = s:smooth_scroll_nline
   let ntime = s:smooth_scroll_ntime
   let direc = s:smooth_scroll_direction
-  return direc * float2nr(nline / ntime * a:t)
+  return direc * float2nr(1.0 * nline / ntime * a:t)
 endfunction
 
 
@@ -50,9 +51,9 @@ function! s:tick(timer_id)
     call timer_stop(s:timer_id)
     unlet s:timer_id
   else
-    let smooth_scroll_pos_now = s:smooth_scroll_linear(s:smooth_scroll_time - 1)
-    let smooth_scroll_pos_next = s:smooth_scroll_linear(s:smooth_scroll_time)
-    let smooth_scroll_delta = smooth_scroll_pos_next - smooth_scroll_pos_now
+    let smooth_scroll_now = s:smooth_scroll_linear(s:smooth_scroll_time)
+    let smooth_scroll_delta = smooth_scroll_now - s:smooth_scroll_prev
+    let s:smooth_scroll_prev = smooth_scroll_now
 
     " Scroll
     if l:smooth_scroll_delta > 0
@@ -102,6 +103,7 @@ endfunction
 
 function! smooth_scroll#flick(nline, ntime, direction)
   let s:smooth_scroll_time = 0
+  let s:smooth_scroll_prev = 0
   let s:smooth_scroll_nline = a:nline
   let s:smooth_scroll_ntime = a:ntime
   let s:smooth_scroll_direction = a:direction
