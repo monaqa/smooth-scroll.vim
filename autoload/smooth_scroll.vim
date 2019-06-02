@@ -36,22 +36,39 @@ let s:smooth_scroll_nline = 80
 let s:smooth_scroll_ntime = 20
 let s:smooth_scroll_direction = 1
 
-function! s:smooth_scroll_linear(t)
+function! s:smooth_scroll_countline(t, kind)
   let nline = s:smooth_scroll_nline
-  let ntime = s:smooth_scroll_ntime
   let direc = s:smooth_scroll_direction
-  return direc * float2nr(1.0 * nline / ntime * a:t)
+  let t_rate = 1.0 * a:t / s:smooth_scroll_ntime
+  let Func = function('s:smooth_curve_' . a:kind)
+  let l_rate = Func(t_rate)
+  return direc * float2nr(1.0 * nline * l_rate)
 endfunction
 
+function! s:smooth_curve_quadratic(r)
+  return 1.0 * a:r * (2.0 - a:r)
+endfunction
+
+function! s:smooth_curve_linear(r)
+  return 1.0 * a:r
+endfunction
+
+function! s:smooth_curve_cubic(r)
+  return 1.0 * a:r * a:r * (3.0 - 2.0 * a:r)
+endfunction
 
 function! s:tick(timer_id)
-
   let s:smooth_scroll_time += 1
   if s:smooth_scroll_time > s:smooth_scroll_ntime
     call timer_stop(s:timer_id)
     unlet s:timer_id
   else
-    let smooth_scroll_now = s:smooth_scroll_linear(s:smooth_scroll_time)
+    let smooth_scroll_now = s:smooth_scroll_countline(s:smooth_scroll_time, g:smooth_scroll_scrollkind)
+    " if g:smooth_scroll_scrollkind == "linear"
+    "   let smooth_scroll_now = s:smooth_scroll_linear(s:smooth_scroll_time)
+    " else
+    "   let smooth_scroll_now = s:smooth_scroll_quadratic(s:smooth_scroll_time)
+    " endif
     let smooth_scroll_delta = smooth_scroll_now - s:smooth_scroll_prev
     let s:smooth_scroll_prev = smooth_scroll_now
 
