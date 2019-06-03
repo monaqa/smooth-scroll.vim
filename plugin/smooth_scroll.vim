@@ -16,11 +16,11 @@ set cpo&vim
 
 
 if !exists('g:smooth_scroll_no_default_key_mappings') ||
-\  !g:smooth_scroll_no_default_key_mappings
-  nnoremap <silent> <C-d> :call smooth_scroll#flick(40, 20, 1)<CR>
-  nnoremap <silent> <C-u> :call smooth_scroll#flick(40, 20, -1)<CR>
-  nnoremap <silent> <C-f> :call smooth_scroll#flick(80, 20, 1)<CR>
-  nnoremap <silent> <C-b> :call smooth_scroll#flick(80, 20, -1)<CR>
+      \  !g:smooth_scroll_no_default_key_mappings
+  nnoremap <silent> <C-d> :<C-u>call smooth_scroll#flick(v:count1 * winheight(0) / 2, winheight(0) / 3,  1)<CR>
+  nnoremap <silent> <C-u> :<C-u>call smooth_scroll#flick(v:count1 * winheight(0) / 2, winheight(0) / 3, -1)<CR>
+  nnoremap <silent> <C-f> :<C-u>call smooth_scroll#flick(v:count1 * winheight(0)    , winheight(0) / 2,  1)<CR>
+  nnoremap <silent> <C-b> :<C-u>call smooth_scroll#flick(v:count1 * winheight(0)    , winheight(0) / 2, -1)<CR>
 endif
 
 

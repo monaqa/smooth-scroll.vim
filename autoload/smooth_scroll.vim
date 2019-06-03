@@ -29,20 +29,30 @@ if !exists('g:smooth_scroll_scroll_up_key')
   let g:smooth_scroll_scroll_up_key = "k"
 endif
 
-" The time
-let s:smooth_scroll_time = 0
-let s:smooth_scroll_prev = 0
-let s:smooth_scroll_nline = 80
-let s:smooth_scroll_ntime = 20
-let s:smooth_scroll_direction = 1
+" 時間カウント．1動作のたびにカウントアップする．
+" 画面遷移系のコマンドが押されると0にリセットされる．
+let s:time = 0
 
-function! s:smooth_scroll_countline(t, kind)
-  let nline = s:smooth_scroll_nline
-  let direc = s:smooth_scroll_direction
-  let t_rate = 1.0 * a:t / s:smooth_scroll_ntime
+" スクロールする目標となる行数．
+" 正の値なら下向きに，負の値なら上向きに移動しようとしている．
+" コマンドが押されると，残っていた（移動しきっていない）残数が加算される．
+let s:goal = 0
+
+" 現状の位置． s:goal にどこまで近づいているか．
+let s:nowpos = 0
+
+" スクロールにかける時間．数字は初期化のためで現在特に意味はない．
+let s:n_time = 20
+
+" スクロールの方向．1が下向き，-1が上向き．
+let s:direction = 1
+
+" 
+function! s:smooth_scroll_countline(l, t, kind)
+  let t_rate = 1.0 * a:t / s:n_time
   let Func = function('s:smooth_curve_' . a:kind)
   let l_rate = Func(t_rate)
-  return direc * float2nr(1.0 * nline * l_rate)
+  return s:direction * float2nr(1.0 * a:l * l_rate)
 endfunction
 
 function! s:smooth_curve_quadratic(r)
@@ -57,20 +67,20 @@ function! s:smooth_curve_cubic(r)
   return 1.0 * a:r * a:r * (3.0 - 2.0 * a:r)
 endfunction
 
+function! s:smooth_curve_quintic(r)
+  return 1.0 * a:r * a:r * a:r * (6.0 * a:r * a:r - 15 * a:r + 10)
+endfunction
+
+" 
 function! s:tick(timer_id)
-  let s:smooth_scroll_time += 1
-  if s:smooth_scroll_time > s:smooth_scroll_ntime
+  let s:time += 1
+  if s:time > s:n_time
     call timer_stop(s:timer_id)
     unlet s:timer_id
   else
-    let smooth_scroll_now = s:smooth_scroll_countline(s:smooth_scroll_time, g:smooth_scroll_scrollkind)
-    " if g:smooth_scroll_scrollkind == "linear"
-    "   let smooth_scroll_now = s:smooth_scroll_linear(s:smooth_scroll_time)
-    " else
-    "   let smooth_scroll_now = s:smooth_scroll_quadratic(s:smooth_scroll_time)
-    " endif
-    let smooth_scroll_delta = smooth_scroll_now - s:smooth_scroll_prev
-    let s:smooth_scroll_prev = smooth_scroll_now
+    let nextpos = s:smooth_scroll_countline(abs(s:goal), s:time, g:smooth_scroll_scrollkind)
+    let smooth_scroll_delta = nextpos - s:nowpos
+    let s:nowpos = nextpos
 
     " Scroll
     if l:smooth_scroll_delta > 0
@@ -119,15 +129,24 @@ function! s:tick(timer_id)
 endfunction
 
 function! smooth_scroll#flick(nline, ntime, direction)
-  let s:smooth_scroll_time = 0
-  let s:smooth_scroll_prev = 0
-  let s:smooth_scroll_nline = a:nline
-  let s:smooth_scroll_ntime = a:ntime
-  let s:smooth_scroll_direction = a:direction
+    let s:time = 0
+    let s:n_time = a:ntime
   if !exists('s:timer_id')
     " There is no thread, start one
+    let s:nowpos = 0
+    let s:direction = a:direction
+    let s:goal = a:nline * a:direction
     let l:interval = float2nr(round(g:smooth_scroll_interval))
     let s:timer_id = timer_start(l:interval, function("s:tick"), {'repeat': -1})
+  else
+    let s:goal = a:nline * a:direction + (s:goal - s:nowpos)
+    let s:nowpos = 0
+    if s:goal == 0
+      call timer_stop(s:timer_id)
+      unlet s:timer_id
+    else
+      let s:direction = abs(s:goal) / s:goal
+    end
   endif
 endfunction
 
