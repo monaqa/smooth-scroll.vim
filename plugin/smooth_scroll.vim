@@ -1,7 +1,7 @@
 "=============================================================================
 " File: smooth_scroll.vim
-" Author: Yuta Taniguchi
-" Created: 2016-10-02
+" Author: Mogami Shinichi
+" Created: 2019-06-02
 "=============================================================================
 
 scriptencoding utf-8
