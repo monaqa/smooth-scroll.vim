@@ -14,6 +14,7 @@ let g:loaded_smooth_scroll = 1
 let s:save_cpo = &cpo
 set cpo&vim
 
+let g:smooth_scroll_is_active = v:false
 
 if !exists('g:smooth_scroll_no_default_key_mappings') ||
       \  !g:smooth_scroll_no_default_key_mappings

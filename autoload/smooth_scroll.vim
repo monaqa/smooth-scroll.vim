@@ -14,7 +14,6 @@ let g:loaded_smooth_scroll = 1
 let s:save_cpo = &cpo
 set cpo&vim
 
-
 " Default parameter values
 if !exists('g:smooth_scroll_interval')
   let g:smooth_scroll_interval = 1000.0 / 60
@@ -47,7 +46,6 @@ let s:n_time = 20
 " スクロールの方向．1が下向き，-1が上向き．
 let s:direction = 1
 
-" 
 function! s:smooth_scroll_countline(l, t, kind)
   let t_rate = 1.0 * a:t / s:n_time
   let Func = function('s:smooth_curve_' . a:kind)
@@ -71,12 +69,12 @@ function! s:smooth_curve_quintic(r)
   return 1.0 * a:r * a:r * a:r * (6.0 * a:r * a:r - 15 * a:r + 10)
 endfunction
 
-" 
 function! s:tick(timer_id)
   let s:time += 1
   if s:time > s:n_time
     call timer_stop(s:timer_id)
     unlet s:timer_id
+    let g:smooth_scroll_is_active = v:false
   else
     let nextpos = s:smooth_scroll_countline(abs(s:goal), s:time, g:smooth_scroll_scrollkind)
     let smooth_scroll_delta = nextpos - s:nowpos
@@ -94,8 +92,9 @@ function! s:tick(timer_id)
 endfunction
 
 function! smooth_scroll#flick(nline, ntime, direction)
-    let s:time = 0
-    let s:n_time = a:ntime
+  let g:smooth_scroll_is_active = v:true
+  let s:time = 0
+  let s:n_time = a:ntime
   if !exists('s:timer_id')
     " There is no thread, start one
     let s:nowpos = 0
@@ -109,6 +108,7 @@ function! smooth_scroll#flick(nline, ntime, direction)
     if s:goal == 0
       call timer_stop(s:timer_id)
       unlet s:timer_id
+      let g:smooth_scroll_is_active = v:false
     else
       let s:direction = abs(s:goal) / s:goal
     end
