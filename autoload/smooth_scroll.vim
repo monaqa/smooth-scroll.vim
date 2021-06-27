@@ -15,6 +15,9 @@ let s:save_cpo = &cpo
 set cpo&vim
 
 " Default parameter values
+if !exists('g:smooth_scroll_add_jumplist')
+  let g:smooth_scroll_add_jumplist = v:false
+endif
 if !exists('g:smooth_scroll_interval')
   let g:smooth_scroll_interval = 1000.0 / 60
 endif
@@ -27,6 +30,9 @@ endif
 if !exists('g:smooth_scroll_scroll_up_key')
   let g:smooth_scroll_scroll_up_key = "k"
 endif
+
+" smooth scroll がアクティブかどうか。
+let s:smooth_scroll_is_active = v:false
 
 " 時間カウント．1動作のたびにカウントアップする．
 " 画面遷移系のコマンドが押されると0にリセットされる．
@@ -74,7 +80,7 @@ function! s:tick(timer_id)
   if s:time > s:n_time
     call timer_stop(s:timer_id)
     unlet s:timer_id
-    let g:smooth_scroll_is_active = v:false
+    let s:smooth_scroll_is_active = v:false
   else
     let nextpos = s:smooth_scroll_countline(abs(s:goal), s:time, g:smooth_scroll_scrollkind)
     let smooth_scroll_delta = nextpos - s:nowpos
@@ -91,8 +97,16 @@ function! s:tick(timer_id)
   endif
 endfunction
 
+function! s:add_cursor_line_to_jumplist()
+  let line = line(".")
+  execute "normal! " .. line .. "gg"
+endfunction
+
 function! smooth_scroll#flick(nline, ntime, direction)
-  let g:smooth_scroll_is_active = v:true
+  if !s:smooth_scroll_is_active
+    call s:add_cursor_line_to_jumplist()
+  endif
+  let s:smooth_scroll_is_active = v:true
   let s:time = 0
   let s:n_time = a:ntime
   if !exists('s:timer_id')
@@ -108,7 +122,7 @@ function! smooth_scroll#flick(nline, ntime, direction)
     if s:goal == 0
       call timer_stop(s:timer_id)
       unlet s:timer_id
-      let g:smooth_scroll_is_active = v:false
+      let s:smooth_scroll_is_active = v:false
     else
       let s:direction = abs(s:goal) / s:goal
     end

@@ -14,8 +14,6 @@ let g:loaded_smooth_scroll = 1
 let s:save_cpo = &cpo
 set cpo&vim
 
-let g:smooth_scroll_is_active = v:false
-
 if !exists('g:smooth_scroll_no_default_key_mappings') ||
       \  !g:smooth_scroll_no_default_key_mappings
   nnoremap <silent> <C-d> :<C-u>call smooth_scroll#flick(v:count1 * winheight(0) / 2, winheight(0) / 3,  1)<CR>
