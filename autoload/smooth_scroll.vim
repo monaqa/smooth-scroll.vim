@@ -97,14 +97,9 @@ function! s:tick(timer_id)
   endif
 endfunction
 
-function! s:add_cursor_line_to_jumplist()
-  let line = line(".")
-  execute "normal! " .. line .. "gg"
-endfunction
-
 function! smooth_scroll#flick(nline, ntime, direction)
-  if !s:smooth_scroll_is_active
-    call s:add_cursor_line_to_jumplist()
+  if g:smooth_scroll_add_jumplist && !s:smooth_scroll_is_active
+    normal! m`
   endif
   let s:smooth_scroll_is_active = v:true
   let s:time = 0
