@@ -31,8 +31,17 @@ if !exists('g:smooth_scroll_scroll_up_key')
   let g:smooth_scroll_scroll_up_key = "k"
 endif
 
+if g:smooth_scroll_add_jumplist
+  augroup smooth_scroll
+    autocmd CursorMoved * if !s:smooth_scroll_is_active | let s:smooth_scroll_is_continuous = v:false | endif
+  augroup END
+endif
+
 " smooth scroll がアクティブかどうか。
 let s:smooth_scroll_is_active = v:false
+
+" 直前のカーソル移動コマンドも smooth scroll によるものだったか。
+let s:smooth_scroll_is_continuous = v:false
 
 " 時間カウント．1動作のたびにカウントアップする．
 " 画面遷移系のコマンドが押されると0にリセットされる．
@@ -98,12 +107,17 @@ function! s:tick(timer_id)
 endfunction
 
 function! smooth_scroll#flick(nline, ntime, direction)
-  if g:smooth_scroll_add_jumplist && !s:smooth_scroll_is_active
+  " 必要があれば mark を付ける
+  if g:smooth_scroll_add_jumplist && !s:smooth_scroll_is_continuous
     normal! m`
   endif
+  let s:smooth_scroll_is_continuous = v:true
+
+  " scroll をアクティブにし、タイマーの時刻を初期化
   let s:smooth_scroll_is_active = v:true
   let s:time = 0
   let s:n_time = a:ntime
+
   if !exists('s:timer_id')
     " There is no thread, start one
     let s:nowpos = 0
@@ -112,6 +126,7 @@ function! smooth_scroll#flick(nline, ntime, direction)
     let l:interval = float2nr(round(g:smooth_scroll_interval))
     let s:timer_id = timer_start(l:interval, function("s:tick"), {'repeat': -1})
   else
+    " 既にタイマーが走っていたらそれを流用する
     let s:goal = a:nline * a:direction + (s:goal - s:nowpos)
     let s:nowpos = 0
     if s:goal == 0
