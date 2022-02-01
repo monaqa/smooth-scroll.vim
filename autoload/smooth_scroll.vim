@@ -33,6 +33,7 @@ endif
 
 if g:smooth_scroll_add_jumplist
   augroup smooth_scroll
+    autocmd!
     autocmd CursorMoved * if !s:smooth_scroll_is_active | let s:smooth_scroll_is_continuous = v:false | endif
   augroup END
 endif
