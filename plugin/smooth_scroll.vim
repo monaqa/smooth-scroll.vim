@@ -16,14 +16,14 @@ set cpo&vim
 
 if !exists('g:smooth_scroll_no_default_key_mappings') ||
       \  !g:smooth_scroll_no_default_key_mappings
-  nnoremap <silent> <C-d> <Cmd>call smooth_scroll#flick(v:count1 * winheight(0) / 2, winheight(0) / 3,  1)<CR>
-  nnoremap <silent> <C-u> <Cmd>call smooth_scroll#flick(v:count1 * winheight(0) / 2, winheight(0) / 3, -1)<CR>
-  nnoremap <silent> <C-f> <Cmd>call smooth_scroll#flick(v:count1 * winheight(0)    , winheight(0) / 2,  1)<CR>
-  nnoremap <silent> <C-b> <Cmd>call smooth_scroll#flick(v:count1 * winheight(0)    , winheight(0) / 2, -1)<CR>
-  vnoremap <silent> <C-d> <Cmd>call smooth_scroll#flick(v:count1 * winheight(0) / 2, winheight(0) / 3,  1)<CR>
-  vnoremap <silent> <C-u> <Cmd>call smooth_scroll#flick(v:count1 * winheight(0) / 2, winheight(0) / 3, -1)<CR>
-  vnoremap <silent> <C-f> <Cmd>call smooth_scroll#flick(v:count1 * winheight(0)    , winheight(0) / 2,  1)<CR>
-  vnoremap <silent> <C-b> <Cmd>call smooth_scroll#flick(v:count1 * winheight(0)    , winheight(0) / 2, -1)<CR>
+  nnoremap <C-d> <Cmd>call smooth_scroll#flick( v:count1 * &scroll     , winheight(0) / 3)<CR>
+  nnoremap <C-u> <Cmd>call smooth_scroll#flick(-v:count1 * &scroll     , winheight(0) / 3)<CR>
+  nnoremap <C-f> <Cmd>call smooth_scroll#flick( v:count1 * winheight(0), winheight(0) / 2)<CR>
+  nnoremap <C-b> <Cmd>call smooth_scroll#flick(-v:count1 * winheight(0), winheight(0) / 2)<CR>
+  vnoremap <C-d> <Cmd>call smooth_scroll#flick( v:count1 * &scroll     , winheight(0) / 3)<CR>
+  vnoremap <C-u> <Cmd>call smooth_scroll#flick(-v:count1 * &scroll     , winheight(0) / 3)<CR>
+  vnoremap <C-f> <Cmd>call smooth_scroll#flick( v:count1 * winheight(0), winheight(0) / 2)<CR>
+  vnoremap <C-b> <Cmd>call smooth_scroll#flick(-v:count1 * winheight(0), winheight(0) / 2)<CR>
 endif
 
 

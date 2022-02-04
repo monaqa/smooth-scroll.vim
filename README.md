@@ -1,6 +1,6 @@
 # smooth_scroll.vim
 
-Vim における `<C-f>, <C-b>, <C-d>, <C-u>` のモーションを滑らかにするためのプラグインです。
+Vim における `<C-f>, <C-b>, <C-d>, <C-u>` によるスクロール操作を滑らかにするためのプラグインです。
 yuttie さんの [comfortable-motion.vim](https://github.com/yuttie/comfortable-motion.vim) を参考にして作成しました。
 指定した行数を指定した時間の間に移動することができます（Vim の処理により多少遅延が発生することがあります）。
 

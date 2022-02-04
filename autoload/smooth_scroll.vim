@@ -24,12 +24,6 @@ endif
 if !exists('g:smooth_scroll_scrollkind')
   let g:smooth_scroll_scrollkind = "quadratic"
 endif
-if !exists('g:smooth_scroll_scroll_down_key')
-  let g:smooth_scroll_scroll_down_key = "j"
-endif
-if !exists('g:smooth_scroll_scroll_up_key')
-  let g:smooth_scroll_scroll_up_key = "k"
-endif
 
 if g:smooth_scroll_add_jumplist
   augroup smooth_scroll
@@ -85,7 +79,7 @@ function! s:smooth_curve_quintic(r)
   return 1.0 * a:r * a:r * a:r * (6.0 * a:r * a:r - 15 * a:r + 10)
 endfunction
 
-function! s:tick(timer_id)
+function! s:tick(timer_id, forward_key, backward_key)
   let s:time += 1
   if s:time > s:n_time
     call timer_stop(s:timer_id)
@@ -98,16 +92,16 @@ function! s:tick(timer_id)
 
     " Scroll
     if l:smooth_scroll_delta > 0
-      execute "normal! " . string(abs(l:smooth_scroll_delta)) . g:smooth_scroll_scroll_down_key
+      execute "normal! " . string(abs(l:smooth_scroll_delta)) .. a:forward_key
     elseif l:smooth_scroll_delta < 0
-      execute "normal! " . string(abs(l:smooth_scroll_delta)) . g:smooth_scroll_scroll_up_key
+      execute "normal! " . string(abs(l:smooth_scroll_delta)) .. a:backward_key
     else
       " Do nothing
     endif
   endif
 endfunction
 
-function! smooth_scroll#flick(nline, ntime, direction)
+function! smooth_scroll#flick(nline, ntime, forward_key = "\<C-e>", backward_key = "\<C-y>", override = v:false)
   " 必要があれば mark を付ける
   if g:smooth_scroll_add_jumplist && !s:smooth_scroll_is_continuous
     normal! m`
@@ -119,24 +113,34 @@ function! smooth_scroll#flick(nline, ntime, direction)
   let s:time = 0
   let s:n_time = a:ntime
 
+  if exists('s:timer_id') && a:override
+    call timer_stop(s:timer_id)
+    unlet s:timer_id
+  endif
+
   if !exists('s:timer_id')
     " There is no thread, start one
+    let s:goal = a:nline
     let s:nowpos = 0
-    let s:direction = a:direction
-    let s:goal = a:nline * a:direction
+    if s:goal == 0
+      return
+    endif
+    let s:direction = s:goal / abs(s:goal)
     let l:interval = float2nr(round(g:smooth_scroll_interval))
-    let s:timer_id = timer_start(l:interval, function("s:tick"), {'repeat': -1})
+    let fk = a:forward_key
+    let bk = a:backward_key
+    let s:timer_id = timer_start(l:interval, {id -> s:tick(id, fk, bk)}, {'repeat': -1})
   else
     " 既にタイマーが走っていたらそれを流用する
-    let s:goal = a:nline * a:direction + (s:goal - s:nowpos)
+    let s:goal = a:nline + (s:goal - s:nowpos)
     let s:nowpos = 0
     if s:goal == 0
       call timer_stop(s:timer_id)
       unlet s:timer_id
       let s:smooth_scroll_is_active = v:false
     else
-      let s:direction = abs(s:goal) / s:goal
-    end
+      let s:direction = s:goal / abs(s:goal)
+    endif
   endif
 endfunction
 
